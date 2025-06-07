@@ -5,6 +5,12 @@ body {
     font-family: Arial, sans-serif;
 }
 
+/* Standardise box sizing for inputs and dropdowns */
+input[type="text"],
+select {
+    box-sizing: border-box;
+}
+
 /* === Layout for main app === */
 .container {
     display: flex;
@@ -48,7 +54,7 @@ body {
 
 .right-panel input[type="text"],
 .right-panel select {
-    width: 100%;
+    width: 75%;
     padding: 10px;
     margin: 10px 0;
     font-size: 16px;
@@ -56,27 +62,33 @@ body {
 
 .right-panel .button-row {
     display: flex;
+    justify-content: space-between;
+    width: 25%;
     gap: 10px;
+    margin-top: 10px;
 }
 
 .right-panel .ask-button,
 .right-panel .clear-button {
     flex: 1;
-    height: 50px;
+    padding: 12px 0;
     font-size: 16px;
-    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 6px;
     border: none;
     cursor: pointer;
+    color: white;
 }
 
+/* Ask Check-Mate = Green */
 .right-panel .ask-button {
     background-color: #4CAF50;
-    color: white;
 }
 
-..right-panel .clear-button {
+/* Clear Search = Red */
+.right-panel .clear-button {
     background-color: #d9534f;
-    color: white;
 }
 
 .response-section {
@@ -98,4 +110,8 @@ body {
     padding: 12px;
     margin-bottom: 10px;
     border-left: 4px solid #4CAF50;
+}
+li {
+    margin-bottom: 25px;
+    line-height: 1.6;
 }
