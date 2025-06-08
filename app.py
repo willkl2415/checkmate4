@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 
 # --- Flask setup ---
 app = Flask(
@@ -35,19 +35,23 @@ except Exception as e:
 def index():
     question = ""
     results = []
-    selected_doc = None
-    selected_section = None
+    selected_doc = "All Documents"
+    selected_section = "All Sections"
 
     if request.method == "POST":
+        # --- Handle Clear Search ---
+        if request.form.get("clear"):
+            return redirect(url_for("index"))
+
         question = request.form.get("question", "").strip().lower()
         selected_doc = request.form.get("document")
         selected_section = request.form.get("refine")
 
         for chunk in chunks:
             if question in chunk.get("content", "").lower():
-                if selected_doc and selected_doc != "All Documents" and chunk.get("document") != selected_doc:
+                if selected_doc != "All Documents" and chunk.get("document") != selected_doc:
                     continue
-                if selected_section and selected_section != "All Sections" and chunk.get("section") != selected_section:
+                if selected_section != "All Sections" and chunk.get("section") != selected_section:
                     continue
                 results.append(chunk)
 
