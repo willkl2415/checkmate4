@@ -1,15 +1,9 @@
 import os
 import json
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 
-# --- Flask setup ---
-app = Flask(
-    __name__,
-    template_folder="templates",
-    static_folder="static"
-)
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
-# --- Path to your data ---
 CHUNKS_PATH = os.path.join("data", "chunks.json")
 
 chunks = []
@@ -17,7 +11,6 @@ documents = []
 refine_options = []
 error_message = ""
 
-# --- Load chunks safely ---
 try:
     with open(CHUNKS_PATH, "r", encoding="utf-8") as f:
         chunks = json.load(f)
@@ -30,28 +23,23 @@ except json.JSONDecodeError:
 except Exception as e:
     error_message = f"UNEXPECTED ERROR: {str(e)}"
 
-# --- Main route ---
 @app.route("/", methods=["GET", "POST"])
 def index():
     question = ""
     results = []
-    selected_doc = "All Documents"
-    selected_section = "All Sections"
+    selected_doc = None
+    selected_section = None
 
     if request.method == "POST":
-        # --- Handle Clear Search ---
-        if request.form.get("clear"):
-            return redirect(url_for("index"))
-
         question = request.form.get("question", "").strip().lower()
         selected_doc = request.form.get("document")
         selected_section = request.form.get("refine")
 
         for chunk in chunks:
             if question in chunk.get("content", "").lower():
-                if selected_doc != "All Documents" and chunk.get("document") != selected_doc:
+                if selected_doc and selected_doc != "All Documents" and chunk.get("document") != selected_doc:
                     continue
-                if selected_section != "All Sections" and chunk.get("section") != selected_section:
+                if selected_section and selected_section != "All Sections" and selected_section.lower() not in (chunk.get("section") or "").lower():
                     continue
                 results.append(chunk)
 
@@ -66,7 +54,6 @@ def index():
         error=error_message
     )
 
-# --- Ensure correct port on Render ---
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
