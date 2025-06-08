@@ -6,54 +6,78 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="left-panel">
-            <h2><strong>Welcome to Check-Mate</strong></h2>
-            <img src="/static/checkmate.png" class="logo" alt="Check-Mate Logo">
-            <p>Check-Mate is a go-to application for Training Consultants, Analysts, Designers, and Decision-Makers who demand accuracy, assurance, and speed – without compromise.</p>
-            <p>Check-Mate is a cutting-edge AI solution built to deliver instant clarity in high-complexity environments – especially those shaped by Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
-            <p><strong>Ask a question. Get an answer. Not in Hours, Not in Minutes but in 5 seconds or less.</strong></p>
-        </div>
+<div class="container">
+    <div class="left-panel">
+        <h2><strong>Welcome to Check-Mate</strong></h2>
+        <img src="/static/checkmate.png" class="logo" alt="Check-Mate Logo">
+        <p>Check-Mate is a go-to application for Training Consultants, Analysts, Designers, and Decision-Makers who demand accuracy, assurance, and speed – without compromise.</p>
+        <p>Check-Mate is a cutting-edge AI solution built to deliver instant clarity in high-complexity environments – especially those shaped by Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
+        <p><strong>Ask a question. Get an answer. Not in Hours, Not in Minutes but in 5 seconds or less.</strong></p>
+    </div>
 
-        <div class="right-panel">
-            {% if error %}
-                <div style="color: red; font-weight: bold;">{{ error }}</div>
-            {% endif %}
-            <form method="POST">
-                <input type="text" name="question" placeholder="Type your question..." value="{{ question }}">
-                <select name="document" onchange="this.form.submit()">
-                    <option value="All Documents" {% if selected_doc == "All Documents" %}selected{% endif %}>All Documents</option>
-                    {% for doc in documents %}
-                        <option value="{{ doc }}" {% if selected_doc == doc %}selected{% endif %}>{{ doc }}</option>
-                    {% endfor %}
-                </select>
+    <div class="right-panel">
+        <form method="POST">
+            <input type="text" name="question" id="question" placeholder="Type your question..." value="{{ question }}" list="suggestions">
+            <datalist id="suggestions"></datalist>
 
-                <select name="refine" onchange="this.form.submit()">
-                    <option value="All Sections" {% if selected_section == "All Sections" %}selected{% endif %}>All Sections</option>
-                    {% for section in refine_options %}
-                        <option value="{{ section }}" {% if selected_section == section %}selected{% endif %}>{{ section }}</option>
-                    {% endfor %}
-                </select>
+            <select name="document" id="document">
+                <option value="All Documents">All Documents</option>
+                {% for doc in documents %}
+                    <option value="{{ doc }}" {% if selected_doc == doc %}selected{% endif %}>{{ doc }}</option>
+                {% endfor %}
+            </select>
 
-                <div class="button-row">
-                    <button type="submit" class="ask-button" name="ask">Ask Check-Mate</button>
-                    <button type="submit" class="clear-button" name="clear" value="1">Clear Search</button>
-                </div>
-            </form>
+            <select name="refine" id="refine">
+                <option value="All Sections">All Sections</option>
+                {% for section in refine_options %}
+                    <option value="{{ section }}" {% if selected_section == section %}selected{% endif %}>{{ section }}</option>
+                {% endfor %}
+            </select>
 
-            <div class="response-section">
-                <h3>Check-Mate’s Response ({{ results|length }} results)</h3>
-                {% if results %}
-                <ul>
-                    {% for item in results %}
-                        <li><strong>{{ item.document }}</strong> — {{ item.section or 'Uncategorised' }}<br>{{ item.content }}</li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                    <p><em>Use the document filter to view all matches.</em></p>
-                {% endif %}
+            <div class="button-row">
+                <button type="submit" class="ask-button" name="ask">Ask Check-Mate</button>
+                <button type="submit" class="clear-button" name="clear" value="1">Clear Search</button>
             </div>
+        </form>
+
+        <div class="response-section">
+            <h3>Check-Mate’s Response ({{ results|length }} results)</h3>
+            {% if results|length == 0 %}
+                <p><em>Use the document filter to view all matches.</em></p>
+            {% endif %}
+            <ul>
+                {% for item in results %}
+                    <li><strong>{{ item.document }}</strong> — {{ item.section or 'Uncategorised' }}<br>{{ item.content }}</li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const questionBox = document.getElementById("question");
+    const docFilter = document.getElementById("document");
+    const suggestionList = document.getElementById("suggestions");
+
+    questionBox.addEventListener("input", function () {
+        const query = this.value;
+        const filename = docFilter.value;
+
+        if (query.length > 2) {
+            fetch(`/autocomplete?query=${query}&filename=${encodeURIComponent(filename)}`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestionList.innerHTML = "";
+                    data.forEach(word => {
+                        const option = document.createElement("option");
+                        option.value = word;
+                        suggestionList.appendChild(option);
+                    });
+                });
+        }
+    });
+});
+</script>
 </body>
 </html>
