@@ -16,19 +16,22 @@
     </div>
 
     <div class="right-panel">
-        <form method="POST">
-            <input type="text" name="question" id="question" placeholder="Type your question..." value="{{ question }}" list="suggestions">
-            <datalist id="suggestions"></datalist>
+        {% if error %}
+            <div style="color: red; font-weight: bold;">{{ error }}</div>
+        {% endif %}
 
-            <select name="document" id="document">
-                <option value="All Documents">All Documents</option>
+        <form method="POST">
+            <input type="text" name="question" placeholder="Type your question..." value="{{ question }}">
+
+            <select name="document" id="document-select">
+                <option value="All Documents" {% if selected_doc == "All Documents" %}selected{% endif %}>All Documents</option>
                 {% for doc in documents %}
                     <option value="{{ doc }}" {% if selected_doc == doc %}selected{% endif %}>{{ doc }}</option>
                 {% endfor %}
             </select>
 
-            <select name="refine" id="refine">
-                <option value="All Sections">All Sections</option>
+            <select name="refine" id="refine-select">
+                <option value="All Sections" {% if selected_section == "All Sections" %}selected{% endif %}>All Sections</option>
                 {% for section in refine_options %}
                     <option value="{{ section }}" {% if selected_section == section %}selected{% endif %}>{{ section }}</option>
                 {% endfor %}
@@ -40,44 +43,36 @@
             </div>
         </form>
 
+        {% if results %}
         <div class="response-section">
             <h3>Check-Mate’s Response ({{ results|length }} results)</h3>
-            {% if results|length == 0 %}
-                <p><em>Use the document filter to view all matches.</em></p>
-            {% endif %}
             <ul>
                 {% for item in results %}
                     <li><strong>{{ item.document }}</strong> — {{ item.section or 'Uncategorised' }}<br>{{ item.content }}</li>
                 {% endfor %}
             </ul>
+            <p><em>Use the document filter to view all matches.</em></p>
         </div>
+        {% endif %}
     </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const questionBox = document.getElementById("question");
-    const docFilter = document.getElementById("document");
-    const suggestionList = document.getElementById("suggestions");
-
-    questionBox.addEventListener("input", function () {
-        const query = this.value;
-        const filename = docFilter.value;
-
-        if (query.length > 2) {
-            fetch(`/autocomplete?query=${query}&filename=${encodeURIComponent(filename)}`)
-                .then(response => response.json())
-                .then(data => {
-                    suggestionList.innerHTML = "";
-                    data.forEach(word => {
-                        const option = document.createElement("option");
-                        option.value = word;
-                        suggestionList.appendChild(option);
-                    });
+    document.getElementById("document-select").addEventListener("change", function () {
+        const selectedDoc = this.value;
+        fetch(`/get_sections?document=${encodeURIComponent(selectedDoc)}`)
+            .then(response => response.json())
+            .then(data => {
+                const refineSelect = document.getElementById("refine-select");
+                refineSelect.innerHTML = '<option value="All Sections">All Sections</option>';
+                data.forEach(section => {
+                    const option = document.createElement("option");
+                    option.value = section;
+                    option.text = section;
+                    refineSelect.appendChild(option);
                 });
-        }
+            });
     });
-});
 </script>
 </body>
 </html>
