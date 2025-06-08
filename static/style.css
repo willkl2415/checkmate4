@@ -1,17 +1,9 @@
-/* General resets */
 body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
 }
 
-/* Standardise box sizing for inputs and dropdowns */
-input[type="text"],
-select {
-    box-sizing: border-box;
-}
-
-/* === Layout for main app === */
 .container {
     display: flex;
     height: 100vh;
@@ -42,16 +34,6 @@ select {
     margin-bottom: 20px;
 }
 
-.left-panel h2 {
-    font-size: 18px;
-    margin-bottom: 15px;
-}
-
-.left-panel p {
-    font-size: 14px;
-    margin-bottom: 10px;
-}
-
 .right-panel input[type="text"],
 .right-panel select {
     width: 75%;
@@ -60,34 +42,29 @@ select {
     font-size: 16px;
 }
 
-.right-panel .button-row {
+.button-row {
     display: flex;
-    justify-content: space-between;
-    width: 25%;
     gap: 10px;
     margin-top: 10px;
 }
 
-.right-panel .ask-button,
-.right-panel .clear-button {
-    flex: 1;
-    padding: 12px 0;
+.ask-button,
+.clear-button {
+    padding: 12px;
     font-size: 16px;
-    font-weight: bold;
-    text-align: center;
-    border-radius: 6px;
+    border-radius: 4px;
     border: none;
-    cursor: pointer;
     color: white;
+    cursor: pointer;
+    width: 150px;
+    font-weight: bold;
 }
 
-/* Ask Check-Mate = Green */
-.right-panel .ask-button {
+.ask-button {
     background-color: #4CAF50;
 }
 
-/* Clear Search = Red */
-.right-panel .clear-button {
+.clear-button {
     background-color: #d9534f;
 }
 
@@ -110,8 +87,4 @@ select {
     padding: 12px;
     margin-bottom: 10px;
     border-left: 4px solid #4CAF50;
-}
-li {
-    margin-bottom: 25px;
-    line-height: 1.6;
 }
