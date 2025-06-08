@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -53,6 +53,21 @@ def index():
         selected_section=selected_section,
         error=error_message
     )
+
+@app.route("/autocomplete")
+def autocomplete():
+    query = request.args.get("query", "").strip().lower()
+    filename = request.args.get("filename", "").strip()
+
+    suggestions = set()
+    for chunk in chunks:
+        if filename != "All Documents" and chunk.get("document") != filename:
+            continue
+        section = chunk.get("section", "")
+        if query in section.lower():
+            suggestions.add(section)
+
+    return jsonify(sorted(suggestions))
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
