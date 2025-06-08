@@ -1,71 +1,47 @@
 import os
 import json
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, redirect, url_for
+from answer_engine import get_answer
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
+app = Flask(__name__)
 
-CHUNKS_PATH = os.path.join("data", "chunks.json")
+# Load data from chunks.json
+with open("data/chunks.json", "r", encoding="utf-8") as f:
+    chunks_data = json.load(f)
 
-chunks = []
-documents = []
-refine_map = {}
-error_message = ""
-
-# Load chunks and create document-to-section map
-try:
-    with open(CHUNKS_PATH, "r", encoding="utf-8") as f:
-        chunks = json.load(f)
-        documents = sorted(set(chunk.get("document", "Unknown") for chunk in chunks))
-
-        for chunk in chunks:
-            doc = chunk.get("document", "Unknown")
-            sec = chunk.get("section", "Uncategorised")
-            if doc not in refine_map:
-                refine_map[doc] = set()
-            if sec:
-                refine_map[doc].add(sec)
-except Exception as e:
-    error_message = str(e)
+documents = sorted(set(chunk["document"] for chunk in chunks_data))
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    question = ""
-    results = []
-    selected_doc = "All Documents"
-    selected_section = "All Sections"
+    question = request.form.get("question", "")
+    selected_doc = request.form.get("document", "")
+    refine_query = request.form.get("refine_query", "")
+    answer = []
 
-    if request.method == "POST":
-        question = request.form.get("question", "").strip().lower()
-        selected_doc = request.form.get("document", "All Documents")
-        selected_section = request.form.get("refine", "All Sections")
+    if request.form.get("clear") == "1":
+        return redirect(url_for("index"))
 
-        for chunk in chunks:
-            if question in chunk.get("content", "").lower():
-                if selected_doc != "All Documents" and chunk.get("document") != selected_doc:
-                    continue
-                if selected_section != "All Sections" and chunk.get("section") != selected_section:
-                    continue
-                results.append(chunk)
+    filtered_chunks = chunks_data
 
-    refine_options = sorted(refine_map.get(selected_doc, [])) if selected_doc != "All Documents" else []
+    if selected_doc and selected_doc != "All Documents":
+        filtered_chunks = [chunk for chunk in filtered_chunks if chunk["document"] == selected_doc]
+
+    if refine_query:
+        filtered_chunks = [chunk for chunk in filtered_chunks if refine_query.lower() in chunk["content"].lower()]
+
+    if question:
+        answer = get_answer(question, filtered_chunks)
+    elif refine_query:
+        answer = filtered_chunks
 
     return render_template(
         "index.html",
+        answer=answer,
         question=question,
-        results=results,
-        documents=documents,
-        refine_options=refine_options,
+        documents=["All Documents"] + documents,
         selected_doc=selected_doc,
-        selected_section=selected_section,
-        error=error_message
+        refine_query=refine_query
     )
 
-@app.route("/get_sections")
-def get_sections():
-    selected_doc = request.args.get("document", "All Documents")
-    options = sorted(refine_map.get(selected_doc, [])) if selected_doc in refine_map else []
-    return jsonify(options)
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
