@@ -1,7 +1,7 @@
 body {
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
 }
 
 .container {
@@ -14,11 +14,9 @@ body {
     background-color: #f3f3f3;
     padding: 25px;
     overflow-y: auto;
-    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: left;
 }
 
 .right-panel {
@@ -28,64 +26,40 @@ body {
 }
 
 .logo {
-    width: 100%;
     max-height: 300px;
     object-fit: contain;
     margin-bottom: 20px;
 }
 
-.left-panel h2 {
-    font-size: 18px;
-    margin-bottom: 15px;
-}
-
-.left-panel p {
-    font-size: 14px;
-    margin-bottom: 10px;
-}
-
-.right-panel input[type="text"],
-.right-panel select {
+input[type="text"], select {
     width: 100%;
-    padding: 10px;
-    margin: 10px 0;
+    padding: 12px;
+    margin: 8px 0;
+    box-sizing: border-box;
     font-size: 16px;
 }
 
 .button-row {
     display: flex;
     gap: 10px;
-    margin-top: 10px;
 }
 
-.ask-button,
-.clear-button {
-    flex: 1;
-    padding: 12px 0;
-    font-size: 16px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-}
-
-.ask-button {
+.green-button {
     background-color: #4CAF50;
     color: white;
+    border: none;
+    padding: 10px 24px;
+    cursor: pointer;
+    flex: 1;
 }
 
-.clear-button {
+.red-button {
     background-color: #d9534f;
     color: white;
-}
-
-.response-section {
-    margin-top: 40px;
-}
-
-.response-section h3 {
-    font-size: 20px;
-    margin-bottom: 10px;
+    border: none;
+    padding: 10px 24px;
+    cursor: pointer;
+    flex: 1;
 }
 
 .response-section ul {
