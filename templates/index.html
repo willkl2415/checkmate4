@@ -1,78 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Check-Mate</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="/static/style.css" />
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const refineInput = document.querySelector("input[name='refine_query']");
+            let timeout = null;
+            refineInput.addEventListener("input", () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => refineInput.form.submit(), 600);
+            });
+
+            const docSelect = document.querySelector("select[name='document']");
+            docSelect.addEventListener("change", () => docSelect.form.submit());
+        });
+    </script>
 </head>
 <body>
-<div class="container">
-    <div class="left-panel">
-        <h2><strong>Welcome to Check-Mate</strong></h2>
-        <img src="/static/checkmate.png" class="logo" alt="Check-Mate Logo">
-        <p>Check-Mate is a go-to application for Training Consultants, Analysts, Designers, and Decision-Makers who demand accuracy, assurance, and speed – without compromise.</p>
-        <p>Check-Mate is a cutting-edge AI solution built to deliver instant clarity in high-complexity environments – especially those shaped by Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
-        <p><strong>Ask a question. Get an answer. Not in Hours, Not in Minutes but in 5 seconds or less.</strong></p>
-    </div>
-
-    <div class="right-panel">
-        {% if error %}
-            <div style="color: red; font-weight: bold;">{{ error }}</div>
-        {% endif %}
-
-        <form method="POST">
-            <input type="text" name="question" placeholder="Type your question..." value="{{ question }}">
-
-            <select name="document" id="document-select">
-                <option value="All Documents" {% if selected_doc == "All Documents" %}selected{% endif %}>All Documents</option>
-                {% for doc in documents %}
-                    <option value="{{ doc }}" {% if selected_doc == doc %}selected{% endif %}>{{ doc }}</option>
-                {% endfor %}
-            </select>
-
-            <select name="refine" id="refine-select">
-                <option value="All Sections" {% if selected_section == "All Sections" %}selected{% endif %}>All Sections</option>
-                {% for section in refine_options %}
-                    <option value="{{ section }}" {% if selected_section == section %}selected{% endif %}>{{ section }}</option>
-                {% endfor %}
-            </select>
-
-            <div class="button-row">
-                <button type="submit" class="ask-button" name="ask">Ask Check-Mate</button>
-                <button type="submit" class="clear-button" name="clear" value="1">Clear Search</button>
-            </div>
-        </form>
-
-        {% if results %}
-        <div class="response-section">
-            <h3>Check-Mate’s Response ({{ results|length }} results)</h3>
-            <ul>
-                {% for item in results %}
-                    <li><strong>{{ item.document }}</strong> — {{ item.section or 'Uncategorised' }}<br>{{ item.content }}</li>
-                {% endfor %}
-            </ul>
-            <p><em>Use the document filter to view all matches.</em></p>
+    <div class="container">
+        <div class="left-panel">
+            <h2 class="text-center">Welcome to Check-Mate</h2>
+            <img src="/static/checkmate.png" class="logo" />
+            <p><strong>Check-Mate</strong> is a go-to application for Training Consultants, Analysts, Designers, and Decision-Makers who demand accuracy, assurance, and speed – without compromise.</p>
+            <p><strong>Check-Mate</strong> is a cutting-edge AI solution built to deliver instant clarity in high-complexity environments – especially those shaped by Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
+            <p>Ask a question. Get an answer. Not in Hours, Not in Minutes but in 5 seconds or less.</p>
+            <p>Drawn directly from authoritative sources, every response is precise, context-rich, and ready for action.</p>
+            <p><strong>Check-Mate doesn’t just speed things up—it delivers time savings of up to 99.7%, transforming slow, manual searches into rapid, evidence-based decisions.</strong></p>
+            <p><strong>Check-Mate isn’t just a nice to have. It’s your final move.</strong></p>
         </div>
-        {% endif %}
-    </div>
-</div>
+        <div class="right-panel">
+            <form method="POST">
+                <input type="text" name="question" placeholder="Type your question..." value="{{ question }}">
+                <select name="document">
+                    {% for doc in documents %}
+                        <option value="{{ doc }}" {% if selected_doc == doc %}selected{% endif %}>{{ doc }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="refine_query" placeholder="Refine your search..." value="{{ refine_query }}">
+                <div class="button-row">
+                    <button type="submit" name="ask" class="green-button"><strong>Ask Check-Mate</strong></button>
+                    <button type="submit" name="clear" value="1" class="red-button"><strong>Clear Search</strong></button>
+                </div>
+            </form>
 
-<script>
-    document.getElementById("document-select").addEventListener("change", function () {
-        const selectedDoc = this.value;
-        fetch(`/get_sections?document=${encodeURIComponent(selectedDoc)}`)
-            .then(response => response.json())
-            .then(data => {
-                const refineSelect = document.getElementById("refine-select");
-                refineSelect.innerHTML = '<option value="All Sections">All Sections</option>';
-                data.forEach(section => {
-                    const option = document.createElement("option");
-                    option.value = section;
-                    option.text = section;
-                    refineSelect.appendChild(option);
-                });
-            });
-    });
-</script>
+            {% if answer %}
+                <div class="response-section">
+                    <h3>Check-Mate’s Response ({{ answer|length }} results)</h3>
+                    <ul>
+                        {% for item in answer %}
+                            <li><strong>{{ item.document }}</strong> — {{ item.section or 'Uncategorised' }}<br>{{ item.content }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p><em>Use the document filter to view all matches.</em></p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
