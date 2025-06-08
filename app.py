@@ -1,9 +1,15 @@
 import os
 import json
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
+# --- Flask setup ---
+app = Flask(
+    __name__,
+    template_folder="templates",
+    static_folder="static"
+)
 
+# --- Path to your data ---
 CHUNKS_PATH = os.path.join("data", "chunks.json")
 
 chunks = []
@@ -11,6 +17,7 @@ documents = []
 refine_options = []
 error_message = ""
 
+# --- Load chunks safely ---
 try:
     with open(CHUNKS_PATH, "r", encoding="utf-8") as f:
         chunks = json.load(f)
@@ -23,6 +30,7 @@ except json.JSONDecodeError:
 except Exception as e:
     error_message = f"UNEXPECTED ERROR: {str(e)}"
 
+# --- Main route ---
 @app.route("/", methods=["GET", "POST"])
 def index():
     question = ""
@@ -39,7 +47,7 @@ def index():
             if question in chunk.get("content", "").lower():
                 if selected_doc and selected_doc != "All Documents" and chunk.get("document") != selected_doc:
                     continue
-                if selected_section and selected_section != "All Sections" and selected_section.lower() not in (chunk.get("section") or "").lower():
+                if selected_section and selected_section != "All Sections" and chunk.get("section") != selected_section:
                     continue
                 results.append(chunk)
 
@@ -54,21 +62,23 @@ def index():
         error=error_message
     )
 
-@app.route("/autocomplete")
+# --- Autocomplete endpoint ---
+@app.route("/autocomplete", methods=["GET"])
 def autocomplete():
     query = request.args.get("query", "").strip().lower()
-    filename = request.args.get("filename", "").strip()
+    filename = request.args.get("filename")
 
     suggestions = set()
     for chunk in chunks:
-        if filename != "All Documents" and chunk.get("document") != filename:
+        if filename and filename != "All Documents" and chunk.get("document") != filename:
             continue
-        section = chunk.get("section", "")
-        if query in section.lower():
-            suggestions.add(section)
+        content = chunk.get("content", "").lower()
+        if query in content:
+            suggestions.add(chunk.get("section", "Uncategorised"))
 
-    return jsonify(sorted(suggestions))
+    return {"suggestions": sorted(suggestions)}
 
+# --- Ensure correct port on Render ---
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
