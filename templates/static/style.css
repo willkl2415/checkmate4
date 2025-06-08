@@ -1,1 +1,101 @@
+/* General resets */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
 
+/* === Layout for main app === */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.left-panel {
+    width: 20%;
+    background-color: #f3f3f3;
+    padding: 25px;
+    overflow-y: auto;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
+}
+
+.right-panel {
+    width: 80%;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.logo {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    margin-bottom: 20px;
+}
+
+.left-panel h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.left-panel p {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.right-panel input[type="text"],
+.right-panel select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.right-panel .button-row {
+    display: flex;
+    gap: 10px;
+}
+
+.right-panel .ask-button,
+.right-panel .clear-button {
+    flex: 1;
+    height: 50px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.right-panel .ask-button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+..right-panel .clear-button {
+    background-color: #d9534f;
+    color: white;
+}
+
+.response-section {
+    margin-top: 40px;
+}
+
+.response-section h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.response-section ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.response-section li {
+    background-color: #f8f8f8;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid #4CAF50;
+}
