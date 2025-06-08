@@ -10,14 +10,13 @@
         <div class="left-panel">
             <h2><strong>Welcome to Check-Mate</strong></h2>
             <img src="/static/checkmate.png" class="logo" alt="Check-Mate Logo">
-            <p><strong>Check-Mate</strong> is a go-to application for Training Consultants, Analysts, Designers, and Decision-Makers who demand accuracy, assurance, and speed – without compromise.</p>
-            <p><strong>Check-Mate</strong> is a cutting-edge AI solution built to deliver instant clarity in high-complexity environments – especially those shaped by Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
-            <p>Inspired by the finality of the phrase in chess, <strong>Check-Mate</strong> empowers you to instantly search, filter, and interrogate massive volumes of structured documentation – training, guidance, standards, and more – using OpenAI’s natural language and intelligent keyword filters.</p>
-            <p>Ask a question. Get an answer. Not in 30 minutes—but in 5 seconds.</p>
+            <p>Check-Mate is a go-to application for Training Consultants, Analysts, Designers, and Decision-Makers who demand accuracy, assurance, and speed – without compromise.</p>
+            <p>Check-Mate is a cutting-edge AI solution built to deliver instant clarity in high-complexity environments – especially those shaped by Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
+            <p>Inspired by the finality of the phrase in chess, Check-Mate empowers you to instantly search, interrogate and filter massive volumes of structured documentation – training, guidance, standards, and more – using OpenAI’s natural language and intelligent keyword filters.</p>
+            <p>Ask a question. Get an answer. Not in Hours, Not in Minutes but in 5 seconds or less.</p>
             <p>Drawn directly from authoritative sources, every response is precise, context-rich, and ready for action.</p>
-            <p><strong>Check-Mate</strong> doesn’t just speed things up—it delivers time savings of up to 99.7%, transforming slow, manual searches into rapid, evidence-based decisions.</p>
-            <p><strong>Check-Mate</strong> isn’t just a nice to have. It’s your final move.</p>
-            <footer>© 2025 William Kennedy-Long. All rights reserved.</footer>
+            <p><strong>Check-Mate doesn’t just speed things up—it delivers time savings of up to 99.7%, transforming slow, manual searches into rapid, evidence-based decisions.</strong></p>
+            <p><strong>Check-Mate isn’t just a nice to have. It’s your final move.</strong></p>
         </div>
 
         <div class="right-panel">
@@ -57,5 +56,26 @@
             {% endif %}
         </div>
     </div>
+
+<script>
+    const refineBox = document.querySelector('input[name="refine_query"]');
+    const docFilter = document.querySelector('select[name="document"]');
+
+    if (refineBox) {
+        refineBox.addEventListener("input", function () {
+            const query = refineBox.value;
+            const selectedFile = docFilter.value;
+
+            if (query.length > 2) {
+                fetch(`/autocomplete?query=${query}&filename=${encodeURIComponent(selectedFile)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Suggestions:", data);
+                    });
+            }
+        });
+    }
+</script>
+
 </body>
 </html>
