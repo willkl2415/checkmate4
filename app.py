@@ -1,59 +1,39 @@
 import os
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
 CHUNKS_PATH = os.path.join("data", "chunks.json")
 
+# --- Load all chunks
 chunks = []
-documents = []
-sections_by_document = {}
-error_message = ""
-
-# Load data
 try:
     with open(CHUNKS_PATH, "r", encoding="utf-8") as f:
         chunks = json.load(f)
-        documents = sorted(set(chunk.get("document", "Unknown") for chunk in chunks))
-        for chunk in chunks:
-            doc = chunk.get("document", "Unknown")
-            sec = chunk.get("section", "Uncategorised")
-            if doc not in sections_by_document:
-                sections_by_document[doc] = set()
-            sections_by_document[doc].add(sec)
-except FileNotFoundError:
-    error_message = f"ERROR: Could not find {CHUNKS_PATH}"
-except json.JSONDecodeError:
-    error_message = f"ERROR: {CHUNKS_PATH} is not valid JSON"
 except Exception as e:
-    error_message = f"UNEXPECTED ERROR: {str(e)}"
+    print(f"Failed to load chunks.json: {e}")
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     question = ""
     results = []
-    selected_doc = "All Documents"
-    selected_section = "All Sections"
-    refine_options = sorted(set(sec for secs in sections_by_document.values() for sec in secs))
+    selected_doc = None
+    selected_section = None
+
+    documents = sorted(set(chunk.get("document", "Unknown") for chunk in chunks))
+    refine_options = sorted(set(chunk.get("section", "Uncategorised") for chunk in chunks if chunk.get("section")))
 
     if request.method == "POST":
         question = request.form.get("question", "").strip().lower()
-        selected_doc = request.form.get("document", "All Documents")
-        selected_section = request.form.get("refine", "All Sections")
+        selected_doc = request.form.get("document")
+        selected_section = request.form.get("refine")
 
-        # Refine options update
-        if selected_doc != "All Documents":
-            refine_options = sorted(sections_by_document.get(selected_doc, []))
-        else:
-            refine_options = sorted(set(sec for secs in sections_by_document.values() for sec in secs))
-
-        # Search logic
         for chunk in chunks:
             if question in chunk.get("content", "").lower():
-                if selected_doc != "All Documents" and chunk.get("document") != selected_doc:
+                if selected_doc and selected_doc != "All Documents" and chunk.get("document") != selected_doc:
                     continue
-                if selected_section != "All Sections" and chunk.get("section") != selected_section:
+                if selected_section and selected_section != "All Sections" and chunk.get("section") != selected_section:
                     continue
                 results.append(chunk)
 
@@ -64,9 +44,23 @@ def index():
         documents=documents,
         refine_options=refine_options,
         selected_doc=selected_doc,
-        selected_section=selected_section,
-        error=error_message
+        selected_section=selected_section
     )
+
+@app.route("/autocomplete")
+def autocomplete():
+    query = request.args.get("query", "").lower()
+    filename = request.args.get("filename", "")
+
+    matches = set()
+    for chunk in chunks:
+        if filename != "All Documents" and chunk.get("document") != filename:
+            continue
+        content = chunk.get("content", "")
+        words = [word.strip(".,:;()[]") for word in content.lower().split()]
+        matches.update(word for word in words if word.startswith(query) and len(word) > 3)
+
+    return jsonify(sorted(list(matches))[:15])
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
